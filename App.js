@@ -1,18 +1,57 @@
+import React, { useEffect } from "react";
 import { StatusBar } from "expo-status-bar";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import ChatScreen from "./screens/ChatScreen";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import ProfileScreen from "./screens/ProfileScreen";
+import CourtScreen from "./screens/CourtScreen";
+import GameScreen from "./screens/GameScreen";
+import LoginScreen from "./screens/LoginScreen";
+import SignupScreen from "./screens/SignupScreen";
 import { GlobalStyles } from "./constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import IconButton from "./components/UI/IconButton";
-import CourtScreen from "./screens/CourtScreen";
+import { View, Text } from "react-native";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
 
-function CourtOverview() {
+function LoadingScreen({ navigation }) {
+  useEffect(() => {
+    async function initializeApp() {
+      try {
+        const savedUserName = await AsyncStorage.getItem("userName");
+
+        console.log(savedUserName);
+
+        if (savedUserName) {
+          navigation.replace("CourtOverview", { userName: savedUserName });
+        } else {
+          navigation.replace("LoginScreen");
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+
+    initializeApp();
+  }, [navigation]);
+
+  return (
+    // You can replace this with a proper loading view
+    <View>
+      <Text>Loading...</Text>
+    </View>
+  );
+}
+
+async function handleLogout(navigation) {
+  await AsyncStorage.removeItem("userName");
+  navigation.navigate("LoginScreen");
+}
+
+function CourtOverview({ route }) {
   return (
     <BottomTabs.Navigator
       screenOptions={({ navigation }) => ({
@@ -22,11 +61,11 @@ function CourtOverview() {
         tabBarActiveTintColor: GlobalStyles.colors.accent500,
         headerRight: ({ tintColor }) => (
           <IconButton
-            icon="person-outline"
-            size={24}
+            icon="log-out-outline"
+            size={28}
             color={tintColor}
             onPress={() => {
-              navigation.navigate("ProfileScreen");
+              handleLogout(navigation);
             }}
           />
         ),
@@ -42,19 +81,16 @@ function CourtOverview() {
             <Ionicons name="home-outline" size={size} color={color} />
           ),
         }}
+        initialParams={{ userName: route.params.userName }}
       />
       <BottomTabs.Screen
-        name="ChatScreen"
-        component={ChatScreen}
+        name="ProfileScreen"
+        component={ProfileScreen}
         options={{
-          title: "Chat",
-          tabBarLabel: "Chat",
+          title: "Profile",
+          tabBarLabel: "Profile",
           tabBarIcon: ({ color, size }) => (
-            <Ionicons
-              name="chatbubble-ellipses-outline"
-              size={size}
-              color={color}
-            />
+            <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
       />
@@ -72,19 +108,40 @@ export default function App() {
             headerStyle: { backgroundColor: GlobalStyles.colors.primary500 },
             headerTintColor: "white",
           }}
+          initialRouteName="LoadingScreen"
         >
+          <Stack.Screen
+            name="LoadingScreen"
+            component={LoadingScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="LoginScreen"
+            component={LoginScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="SignupScreen"
+            component={SignupScreen}
+            options={{ headerShown: false }}
+          />
           <Stack.Screen
             name="CourtOverview"
             component={CourtOverview}
             options={{ headerShown: false }}
           />
           <Stack.Screen
-              name="ProfileScreen"
-              component={ProfileScreen}
-              options={{
-                presentation: "modal",
-              }}
-            />
+            name="GameScreen"
+            component={GameScreen}
+            options={{ headerShown: false }}
+          />
+          <Stack.Screen
+            name="ProfileScreen"
+            component={ProfileScreen}
+            options={{
+              presentation: "modal",
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
     </>
