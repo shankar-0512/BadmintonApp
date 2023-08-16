@@ -22,13 +22,22 @@ function SignupScreen() {
       return;
     }
 
+    if (password.length < 5) {
+      alert("Password should be at least 5 characters long!");
+      return;
+    }
+
     try {
       response = await signup(username, password); // Make sure to implement the signup function in your store
 
       console.log(response);
 
       if (response.responseCode === 0) {
-        navigation.navigate("CourtOverview", { username: username });
+        navigation.navigate("LoginScreen");
+      }
+
+      if (response.responseCode === 1) {
+        alert(response.responseMessage);
       }
     } catch (error) {
       console.log(error);
@@ -40,7 +49,7 @@ function SignupScreen() {
       <Text style={styles.title}>Signup</Text>
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="Nickname"
         onChangeText={setUsername}
         value={username}
       />

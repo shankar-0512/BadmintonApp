@@ -25,6 +25,10 @@ function LoginScreen() {
         await AsyncStorage.setItem("userName", response.userName);
         navigation.navigate("CourtOverview", { userName: response.userName });
       }
+
+      if (response.responseCode == 1) {
+        alert(response.responseMessage);
+      }
     } catch (error) {
       console.log(error);
     }
@@ -35,7 +39,7 @@ function LoginScreen() {
       <Text style={styles.title}>Login</Text>
       <TextInput
         style={styles.input}
-        placeholder="Username"
+        placeholder="Nickname"
         onChangeText={setUsername}
         value={username}
       />
