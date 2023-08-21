@@ -50,3 +50,8 @@ export async function getCourtStatus(request) {
   const response = await axios.post(url + "getCourtStatus/");
   return response.data;
 }
+
+export async function navigateToCourtScreen(request) {
+  const response = await axios.post(url + "navigateToCourtScreen/");
+  return response.data;
+}

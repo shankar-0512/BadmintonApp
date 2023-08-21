@@ -13,6 +13,7 @@ import { GlobalStyles } from "./constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import IconButton from "./components/UI/IconButton";
 import { View, Text } from "react-native";
+import { WebSocketProvider } from "./store/WebSocketProvider";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -22,8 +23,6 @@ function LoadingScreen({ navigation }) {
     async function initializeApp() {
       try {
         const savedUserName = await AsyncStorage.getItem("userName");
-
-        console.log(savedUserName);
 
         if (savedUserName) {
           navigation.replace("CourtOverview", { userName: savedUserName });
@@ -100,7 +99,7 @@ function CourtOverview({ route }) {
 
 export default function App() {
   return (
-    <>
+    <WebSocketProvider>
       <StatusBar style="light" />
       <NavigationContainer>
         <Stack.Navigator
@@ -144,6 +143,6 @@ export default function App() {
           />
         </Stack.Navigator>
       </NavigationContainer>
-    </>
+    </ WebSocketProvider>
   );
 }

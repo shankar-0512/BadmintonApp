@@ -1,11 +1,14 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { View, StyleSheet, Text, Modal } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { updateElo } from "../store/https";
+import { updateElo, navigateToCourtScreen } from "../store/https";
+import { useWebSocket } from "../store/WebSocketProvider";
 
 function GameScreen() {
+  const socket = useWebSocket();
+
   const navigation = useNavigation();
   const route = useRoute();
   const teams = route.params?.teamDetails || [];
@@ -55,12 +58,23 @@ function GameScreen() {
     teamHandler(teams[0].team2, teams[0].team1);
   }
 
-  function proceedHandler() {
+  async function proceedHandler() {
+    const request = {};
     setModalVisible(false);
-
-    // Navigate to CourtScreen with the courtKeyToUpdate parameter
-    navigation.navigate("CourtScreen", { courtKeyToUpdate: courtKey });
+    await navigateToCourtScreen(request);
   }
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.onmessage = (event) => {
+      const receivedData = JSON.parse(event.data);
+
+      if (receivedData.message.updateType === "navigateBack") {
+        navigation.navigate("CourtScreen", { courtKeyToUpdate: courtKey });
+      }
+    };
+  }, [socket]);
 
   return (
     <View style={styles.container}>

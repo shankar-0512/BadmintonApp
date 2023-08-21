@@ -3,15 +3,18 @@ import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
 import { useNavigation, useRoute } from "@react-navigation/native";
+import { useWebSocket } from "../store/WebSocketProvider";
+
 import {
   addToPool,
   removeFromPool,
-  generatePairing,
   fetchActivePlayers,
   getCourtStatus,
 } from "../store/https";
 
 function CourtScreen() {
+  const socket = useWebSocket();
+
   const route = useRoute();
   const navigation = useNavigation();
 
@@ -64,47 +67,6 @@ function CourtScreen() {
     }
   }
 
-  async function onCourtStatusTrue() {
-    try {
-      response = await generatePairing();
-
-      if (response.responseCode === 0) {
-        // Set the first available court to false
-
-        setCourtStatus(response.courtStatus);
-
-        console.log(response);
-
-        for (const team of response.teams) {
-          for (const player of team.team1) {
-            if (player.userName === userName) {
-              navigation.navigate("GameScreen", {
-                teamDetails: response.teams,
-                courtNumber: courtStatus[response.firstAvailableCourt].name,
-                courtKey: response.firstAvailableCourt,
-                userName: userName,
-              });
-              break;
-            }
-          }
-          for (const player of team.team2) {
-            if (player.userName === userName) {
-              navigation.navigate("GameScreen", {
-                teamDetails: response.teams,
-                courtNumber: courtStatus[response.firstAvailableCourt].name,
-                courtKey: response.firstAvailableCourt,
-                userName: userName,
-              });
-              break;
-            }
-          }
-        }
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   async function fetchCourtStatus() {
     try {
       response = await getCourtStatus();
@@ -118,19 +80,6 @@ function CourtScreen() {
   }
 
   useEffect(() => {
-    // Check if courtStatus has changed to true
-    if (
-      (courtStatus.court1.status === true ||
-        courtStatus.court2.status === true ||
-        courtStatus.court3.status === true ||
-        courtStatus.court4.status === true) &&
-      activePlayers >= 4
-    ) {
-      onCourtStatusTrue();
-    }
-  }, [courtStatus, activePlayers]);
-
-  useEffect(() => {
     fetchActivePlayersCount();
   }, [readyStatus, courtStatus]);
 
@@ -141,6 +90,48 @@ function CourtScreen() {
     // Return a cleanup function that will unsubscribe the listener when the component unmounts
     return unsubscribe;
   }, [navigation, fetchCourtStatus]); // Include fetchCourtStatus if it's a dependency
+
+  useEffect(() => {
+    // Listen for when CourtScreen receives focus
+    const unsubscribe = navigation.addListener("focus", () => {
+      setReadyStatus(false);
+    });
+
+    // Cleanup: remove the listener when CourtScreen unmounts or loses focus
+    return unsubscribe;
+  }, [navigation]);
+
+  ///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.onmessage = (event) => {
+      const receivedData = JSON.parse(event.data);
+
+      if (receivedData.message.updateType === "active_players") {
+        setActivePlayers(receivedData.message.data);
+      } else if (receivedData.message.updateType === "court_status") {
+        fetchCourtStatus();
+      } else if (receivedData.message.updateType === "teams") {
+        const { teams, firstAvailableCourt } = receivedData.message.data;
+
+        for (const team of teams) {
+          for (const player of [...team.team1, ...team.team2]) {
+            if (player.userName === userName) {
+              navigation.navigate("GameScreen", {
+                teamDetails: teams,
+                courtNumber: courtStatus[firstAvailableCourt].name,
+                courtKey: firstAvailableCourt,
+                userName: userName,
+              });
+              return;
+            }
+          }
+        }
+      }
+    };
+  }, [socket]);
 
   return (
     <View style={styles.container}>
