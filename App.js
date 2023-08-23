@@ -13,7 +13,9 @@ import { GlobalStyles } from "./constants/styles";
 import { Ionicons } from "@expo/vector-icons";
 import IconButton from "./components/UI/IconButton";
 import { View, Text } from "react-native";
+import { CourtDataContextProvider } from "./store/CourtDataContext";
 import { WebSocketProvider } from "./store/WebSocketProvider";
+import { UserProvider } from "./store/UserContext";
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -99,50 +101,56 @@ function CourtOverview({ route }) {
 
 export default function App() {
   return (
-    <WebSocketProvider>
-      <StatusBar style="light" />
-      <NavigationContainer>
-        <Stack.Navigator
-          screenOptions={{
-            headerStyle: { backgroundColor: GlobalStyles.colors.primary500 },
-            headerTintColor: "white",
-          }}
-          initialRouteName="LoadingScreen"
-        >
-          <Stack.Screen
-            name="LoadingScreen"
-            component={LoadingScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="LoginScreen"
-            component={LoginScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="SignupScreen"
-            component={SignupScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="CourtOverview"
-            component={CourtOverview}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="GameScreen"
-            component={GameScreen}
-            options={{ headerShown: false }}
-          />
-          <Stack.Screen
-            name="ProfileScreen"
-            component={ProfileScreen}
-            options={{
-              presentation: "modal",
-            }}
-          />
-        </Stack.Navigator>
-      </NavigationContainer>
-    </ WebSocketProvider>
+    <UserProvider>
+      <CourtDataContextProvider>
+        <StatusBar style="light" />
+        <NavigationContainer>
+          <WebSocketProvider>
+            <Stack.Navigator
+              screenOptions={{
+                headerStyle: {
+                  backgroundColor: GlobalStyles.colors.primary500,
+                },
+                headerTintColor: "white",
+              }}
+              initialRouteName="LoadingScreen"
+            >
+              <Stack.Screen
+                name="LoadingScreen"
+                component={LoadingScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="LoginScreen"
+                component={LoginScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="SignupScreen"
+                component={SignupScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="CourtOverview"
+                component={CourtOverview}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="GameScreen"
+                component={GameScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen
+                name="ProfileScreen"
+                component={ProfileScreen}
+                options={{
+                  presentation: "modal",
+                }}
+              />
+            </Stack.Navigator>
+          </WebSocketProvider>
+        </NavigationContainer>
+      </CourtDataContextProvider>
+    </UserProvider>
   );
 }

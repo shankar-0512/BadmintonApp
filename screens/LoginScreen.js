@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   View,
   StyleSheet,
@@ -10,11 +10,13 @@ import { useNavigation } from "@react-navigation/native";
 import { GlobalStyles } from "../constants/styles";
 import { login } from "../store/https";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { UserContext } from "../store/UserContext";
 
 function LoginScreen() {
   const navigation = useNavigation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const { setUserName } = useContext(UserContext);
 
   async function handleLogin() {
     try {
@@ -23,6 +25,7 @@ function LoginScreen() {
       if (response.responseCode === 0) {
         // Save the user name to AsyncStorage
         await AsyncStorage.setItem("userName", response.userName);
+        setUserName(response.userName);
         navigation.navigate("CourtOverview", { userName: response.userName });
       }
 

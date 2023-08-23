@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { useWebSocket } from "../store/WebSocketProvider";
+import { CourtDataContext } from "../store/CourtDataContext";
 
 import {
   addToPool,
@@ -13,27 +14,19 @@ import {
 } from "../store/https";
 
 function CourtScreen() {
-  const socket = useWebSocket();
 
   const route = useRoute();
   const navigation = useNavigation();
 
   const userName = route.params?.userName || "";
 
-  const [courtStatus, setCourtStatus] = useState({
-    court1: { name: "Court-1", status: true },
-    court2: { name: "Court-2", status: true },
-    court3: { name: "Court-3", status: true },
-    court4: { name: "Court-4", status: true },
-  });
+  const { activePlayers, courtStatus, setActivePlayers, setCourtStatus } = useContext(CourtDataContext);
 
   const [readyStatus, setReadyStatus] = useState(false);
 
-  const [activePlayers, setActivePlayers] = useState(0);
-
   async function fetchActivePlayersCount() {
     try {
-      response = await fetchActivePlayers();
+      response = await fetchActivePlayers(userName);
 
       if (response.responseCode === 0) {
         setActivePlayers(response.activePlayersCount);
@@ -102,36 +95,6 @@ function CourtScreen() {
   }, [navigation]);
 
   ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.onmessage = (event) => {
-      const receivedData = JSON.parse(event.data);
-
-      if (receivedData.message.updateType === "active_players") {
-        setActivePlayers(receivedData.message.data);
-      } else if (receivedData.message.updateType === "court_status") {
-        fetchCourtStatus();
-      } else if (receivedData.message.updateType === "teams") {
-        const { teams, firstAvailableCourt } = receivedData.message.data;
-
-        for (const team of teams) {
-          for (const player of [...team.team1, ...team.team2]) {
-            if (player.userName === userName) {
-              navigation.navigate("GameScreen", {
-                teamDetails: teams,
-                courtNumber: courtStatus[firstAvailableCourt].name,
-                courtKey: firstAvailableCourt,
-                userName: userName,
-              });
-              return;
-            }
-          }
-        }
-      }
-    };
-  }, [socket]);
 
   return (
     <View style={styles.container}>

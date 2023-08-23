@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const url = "http://10.126.197.37:8000/app/";
+//const url = "https://badminton-app-py-c9deadd73cd5.herokuapp.com/app/";
+const url = "http://10.126.197.37:8000/app/"
 
 export async function login(userName, password) {
   const requestBody = { userName: userName, password: password };
@@ -16,9 +17,9 @@ export async function signup(userName, password) {
   return response.data;
 }
 
-export async function fetchActivePlayers() {
+export async function fetchActivePlayers(userName) {
   const response = await axios.get(url + "fetchActivePlayers/");
-
+  console.log(response.data, userName)
   return response.data;
 }
 
@@ -52,6 +53,7 @@ export async function getCourtStatus(request) {
 }
 
 export async function navigateToCourtScreen(request) {
-  const response = await axios.post(url + "navigateToCourtScreen/");
+  const requestBody = {userName: request}
+  const response = await axios.post(url + "navigateToCourtScreen/", requestBody);
   return response.data;
 }

@@ -1,24 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import { View, StyleSheet, Text, Modal } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { updateElo, navigateToCourtScreen } from "../store/https";
-import { useWebSocket } from "../store/WebSocketProvider";
+import { UserContext } from "../store/UserContext";
+import { CourtDataContext } from "../store/CourtDataContext";
 
 function GameScreen() {
-  const socket = useWebSocket();
 
   const navigation = useNavigation();
   const route = useRoute();
   const teams = route.params?.teamDetails || [];
   const courtNumber = route.params?.courtNumber || [];
   const courtKey = route.params?.courtKey;
-  const userName = route.params?.userName || "";
+
+  const { userName } = useContext(UserContext);
 
   // State for handling the modal
-  const [modalVisible, setModalVisible] = useState(false);
-  const [updatedDetails, setUpdatedDetails] = useState({});
+  //const [modalVisible, setModalVisible] = useState(false);
+  //const [updatedDetails, setUpdatedDetails] = useState({});
+
+  const { updatedDetails, modalVisible } = useContext(CourtDataContext);
 
   const player1Name = teams[0].team1[0].userName;
   const player2Name = teams[0].team1[1].userName;
@@ -38,13 +41,7 @@ function GameScreen() {
     };
 
     try {
-      const response = await updateElo(request);
-
-      if (response.responseCode === 0) {
-        // Assuming the response includes the updated details
-        setUpdatedDetails(response.updatedDetails);
-        setModalVisible(true);
-      }
+      await updateElo(request);
     } catch (error) {
       console.log(error);
     }
@@ -59,22 +56,8 @@ function GameScreen() {
   }
 
   async function proceedHandler() {
-    const request = {};
-    setModalVisible(false);
-    await navigateToCourtScreen(request);
+    await navigateToCourtScreen(userName);
   }
-
-  useEffect(() => {
-    if (!socket) return;
-
-    socket.onmessage = (event) => {
-      const receivedData = JSON.parse(event.data);
-
-      if (receivedData.message.updateType === "navigateBack") {
-        navigation.navigate("CourtScreen", { courtKeyToUpdate: courtKey });
-      }
-    };
-  }, [socket]);
 
   return (
     <View style={styles.container}>
