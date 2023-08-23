@@ -50,12 +50,14 @@ function SignupScreen() {
       <TextInput
         style={styles.input}
         placeholder="Nickname"
+        placeholderTextColor={GlobalStyles.colors.gray700}
         onChangeText={setUsername}
         value={username}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
+        placeholderTextColor={GlobalStyles.colors.gray700}
         secureTextEntry
         onChangeText={setPassword}
         value={password}
@@ -63,6 +65,7 @@ function SignupScreen() {
       <TextInput
         style={styles.input}
         placeholder="Confirm Password"
+        placeholderTextColor={GlobalStyles.colors.gray700}
         secureTextEntry
         onChangeText={setConfirmPassword}
         value={confirmPassword}
@@ -86,40 +89,54 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    backgroundColor: GlobalStyles.colors.primary50,
   },
   title: {
-    fontSize: 24,
-    marginBottom: 20,
+    fontSize: 28,
+    fontWeight: "bold",
+    color: GlobalStyles.colors.primary500,
+    marginBottom: 30,
   },
   input: {
     width: "90%",
-    padding: 10,
+    padding: 12,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: GlobalStyles.colors.primary200,
+    backgroundColor: "#fff",
+    color: GlobalStyles.colors.gray800,
     marginBottom: 20,
     borderRadius: 5,
+    fontSize: 16,
   },
   signupButton: {
-    backgroundColor: GlobalStyles.colors.primary700,
+    backgroundColor: GlobalStyles.colors.primary500,
     padding: 10,
     width: "90%",
     alignItems: "center",
     borderRadius: 5,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   signupButtonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 20,
+    fontWeight: "bold",
   },
   loginContainer: {
     flexDirection: "row",
-    marginTop: 15,
+    marginTop: 20,
   },
   loginText: {
     fontSize: 16,
+    color: GlobalStyles.colors.gray700,
   },
   loginLink: {
     fontSize: 16,
-    color: GlobalStyles.colors.primary700,
+    fontWeight: "bold",
+    color: GlobalStyles.colors.primary400,
     marginLeft: 5,
   },
 });

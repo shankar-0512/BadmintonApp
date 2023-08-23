@@ -3,8 +3,8 @@ import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { useWebSocket } from "../store/WebSocketProvider";
 import { CourtDataContext } from "../store/CourtDataContext";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 import {
   addToPool,
@@ -14,13 +14,13 @@ import {
 } from "../store/https";
 
 function CourtScreen() {
-
   const route = useRoute();
   const navigation = useNavigation();
 
   const userName = route.params?.userName || "";
 
-  const { activePlayers, courtStatus, setActivePlayers, setCourtStatus } = useContext(CourtDataContext);
+  const { activePlayers, courtStatus, setActivePlayers, setCourtStatus } =
+    useContext(CourtDataContext);
 
   const [readyStatus, setReadyStatus] = useState(false);
 
@@ -98,76 +98,55 @@ function CourtScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.activePlayersText}>
-        Active Players: {activePlayers}
-      </Text>
-      <View style={styles.court}>
-        <Text style={styles.courtText}>Court 1</Text>
-        <Text
-          style={[
-            styles.statusText,
-            courtStatus.court1.status
-              ? styles.activeStatus
-              : styles.inactiveStatus,
-          ]}
-        >
-          {courtStatus.court1.status ? "Available" : "Unavailable"}
-        </Text>
+      <Text style={styles.title}>Court Status</Text>
+      <View style={styles.activePlayersContainer}>
+        <MaterialCommunityIcons
+          name="badminton"
+          size={24}
+          color={GlobalStyles.colors.gray800}
+          style={styles.badmintonIcon} // Apply the style here
+        />
+        <Text style={styles.activePlayersText}>{activePlayers}</Text>
       </View>
-      <TouchableOpacity style={styles.court}>
-        <Text style={styles.courtText}>Court 2</Text>
-        <Text
-          style={[
-            styles.statusText,
-            courtStatus.court2.status
-              ? styles.activeStatus
-              : styles.inactiveStatus,
-          ]}
-        >
-          {courtStatus.court2.status ? "Available" : "Unavailable"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.court}>
-        <Text style={styles.courtText}>Court 3</Text>
-        <Text
-          style={[
-            styles.statusText,
-            courtStatus.court3.status
-              ? styles.activeStatus
-              : styles.inactiveStatus,
-          ]}
-        >
-          {courtStatus.court3.status ? "Available" : "Unavailable"}
-        </Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.court}>
-        <Text style={styles.courtText}>Court 4</Text>
-        <Text
-          style={[
-            styles.statusText,
-            courtStatus.court4.status
-              ? styles.activeStatus
-              : styles.inactiveStatus,
-          ]}
-        >
-          {courtStatus.court4.status ? "Available" : "Unavailable"}
-        </Text>
-      </TouchableOpacity>
-      {!readyStatus && (
-        <PrimaryButton onPress={onPressReady}>
-          <Text style={styles.readyButtonText}>Ready</Text>
-        </PrimaryButton>
-      )}
-      {readyStatus && (
-        <Text style={styles.waitingText}>
-          This may take a few minutes. Please wait
-        </Text>
-      )}
-      {readyStatus && (
-        <PrimaryButton onPress={onPressCancel}>
-          <Text style={styles.readyButtonText}>Cancel</Text>
-        </PrimaryButton>
-      )}
+
+      {Object.values(courtStatus)
+        .sort((a, b) => {
+          if (a.name < b.name) return -1;
+          if (a.name > b.name) return 1;
+          return 0;
+        })
+        .map((court, index) => (
+          <View key={index} style={styles.court}>
+            <Text style={styles.courtText}>{court.name}</Text>
+            <Text
+              style={[
+                styles.statusText,
+                court.status ? styles.activeStatus : styles.inactiveStatus,
+              ]}
+            >
+              {court.status ? "Available" : "Unavailable"}
+            </Text>
+          </View>
+        ))}
+
+      <View style={styles.buttonContainer}>
+        {!readyStatus && (
+          <PrimaryButton onPress={onPressReady}>
+            <MaterialCommunityIcons name="badminton" size={24} color="white" />
+          </PrimaryButton>
+        )}
+
+        {readyStatus && (
+          <Text style={styles.waitingText}>
+            This may take a few minutes. Please wait
+          </Text>
+        )}
+        {readyStatus && (
+          <PrimaryButton onPress={onPressCancel}>
+            <MaterialCommunityIcons name="cup-water" size={24} color="white" />
+          </PrimaryButton>
+        )}
+      </View>
     </View>
   );
 }
@@ -178,52 +157,72 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
+    backgroundColor: GlobalStyles.colors.primary50,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: GlobalStyles.colors.primary500,
+    marginBottom: 25,
   },
   activePlayersText: {
-    fontSize: 16,
-    marginBottom: 10,
-  },
-  waitingText: {
-    fontSize: 16,
-    marginTop: 22,
-    marginBottom: -15,
+    fontSize: 18,
     fontWeight: "500",
+    color: GlobalStyles.colors.gray800,
+    marginBottom: 20,
   },
   court: {
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
-    justifyContent: "center",
     height: 70,
     width: "90%",
+    padding: 12,
     marginBottom: 20,
-    borderRadius: 10,
-    backgroundColor: GlobalStyles.colors.primary700,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    backgroundColor: "#fff",
+    elevation: 3, // for android
+    shadowOffset: { width: 0, height: 2 }, // for ios
+    shadowOpacity: 0.25, // for ios
+    borderRadius: 8,
   },
   courtText: {
-    fontSize: 18,
-    color: "#ffffff",
+    fontSize: 20,
+    fontWeight: "500",
+    color: GlobalStyles.colors.gray800,
   },
   statusText: {
-    fontSize: 12,
+    fontSize: 14,
     textAlign: "center",
     fontWeight: "bold",
   },
   activeStatus: {
-    color: "#00ff00",
+    color: GlobalStyles.colors.success500,
   },
   inactiveStatus: {
-    color: "red",
+    color: GlobalStyles.colors.error500,
   },
-  readyButtonText: {
-    fontSize: 18,
-    color: "white",
+  buttonContainer: {
+    width: "100%",
+    alignItems: "center",
+    marginTop: 20,
+  },
+  waitingText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: GlobalStyles.colors.gray700,
+    marginBottom: -21.5,
+  },
+  activePlayersContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    marginLeft: 10,
+    position: "relative", // This ensures that children elements with absolute positioning are positioned relative to this container
+  },
+  badmintonIcon: {
+    position: "absolute",
+    top: -0.25, // Adjust this value to move the icon upwards
+    left: -30, // Adjust this value to move the icon leftwards
   },
 });
 

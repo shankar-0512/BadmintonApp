@@ -7,7 +7,13 @@ export const WebSocketContext = createContext();
 
 export function WebSocketProvider({ children }) {
   const [socket, setSocket] = useState(null);
-  const { courtStatus, setActivePlayers, setCourtStatus, setModalVisible, setUpdatedDetails } = useContext(CourtDataContext);
+  const {
+    courtStatus,
+    setActivePlayers,
+    setCourtStatus,
+    setModalVisible,
+    setUpdatedDetails,
+  } = useContext(CourtDataContext);
   const navigation = useNavigation();
   const { userName } = useContext(UserContext);
 
@@ -15,10 +21,12 @@ export function WebSocketProvider({ children }) {
 
   useEffect(() => {
     userNameRef.current = userName; // Always keep the ref updated with the latest value
-}, [userName]);
+  }, [userName]);
 
   useEffect(() => {
-    const s = new WebSocket("ws://10.126.197.37:8000/ws/updates/");
+    const s = new WebSocket(
+      "wss://badminton-app-py-c9deadd73cd5.herokuapp.com/ws/updates/"
+    );
 
     s.onmessage = (event) => {
       const receivedData = JSON.parse(event.data);
@@ -30,14 +38,14 @@ export function WebSocketProvider({ children }) {
         case "court_status":
           setCourtStatus(receivedData.message.data);
           break;
-        case "teams":  // Handle the teams update
+        case "teams": // Handle the teams update
           const { teams, firstAvailableCourt } = receivedData.message.data;
 
           for (const team of teams) {
             for (const player of [...team.team1, ...team.team2]) {
-              console.log(player, userNameRef.current)
+              console.log(player, userNameRef.current);
               if (player.userName === userNameRef.current) {
-                console.log("NAVIGATE")
+                console.log("NAVIGATE");
                 navigation.navigate("GameScreen", {
                   teamDetails: teams,
                   courtNumber: courtStatus[firstAvailableCourt].name,
@@ -49,16 +57,16 @@ export function WebSocketProvider({ children }) {
             }
           }
           break;
-          case "navigateBack":  // Handle the teams update
-            if (userNameRef.current === receivedData.message.data){
-              navigation.navigate("CourtScreen");
-            }
-            break;
+        case "navigateBack": // Handle the teams update
+          if (userNameRef.current === receivedData.message.data) {
+            navigation.navigate("CourtScreen");
+          }
+          break;
 
-          case "updatedDetailsModal":  // Handle the teams update
-            setUpdatedDetails(receivedData.message.data);
-            setModalVisible(true);
-            break;
+        case "updatedDetailsModal": // Handle the teams update
+          setUpdatedDetails(receivedData.message.data);
+          setModalVisible(true);
+          break;
         default:
           break;
       }

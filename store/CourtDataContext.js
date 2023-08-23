@@ -9,7 +9,6 @@ export function CourtDataContextProvider({ children }) {
     court2: { name: "Court-2", status: true },
     court3: { name: "Court-3", status: true },
     court4: { name: "Court-4", status: true },
-    
   });
 
   const [modalVisible, setModalVisible] = useState(false);
@@ -23,7 +22,7 @@ export function CourtDataContextProvider({ children }) {
     modalVisible,
     setModalVisible,
     updatedDetails,
-    setUpdatedDetails
+    setUpdatedDetails,
   };
 
   return (

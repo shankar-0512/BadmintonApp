@@ -1,4 +1,4 @@
-import React, { useState, useContext } from "react";
+import React, { useContext, useEffect, useCallback } from "react";
 import { View, StyleSheet, Text, Modal } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
@@ -6,9 +6,12 @@ import { useRoute, useNavigation } from "@react-navigation/native";
 import { updateElo, navigateToCourtScreen } from "../store/https";
 import { UserContext } from "../store/UserContext";
 import { CourtDataContext } from "../store/CourtDataContext";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { StatusBar } from "expo-status-bar";
+import { BlurView } from "expo-blur";
+import { BackHandler } from "react-native";
 
 function GameScreen() {
-
   const navigation = useNavigation();
   const route = useRoute();
   const teams = route.params?.teamDetails || [];
@@ -21,7 +24,8 @@ function GameScreen() {
   //const [modalVisible, setModalVisible] = useState(false);
   //const [updatedDetails, setUpdatedDetails] = useState({});
 
-  const { updatedDetails, modalVisible } = useContext(CourtDataContext);
+  const { updatedDetails, modalVisible, setModalVisible } =
+    useContext(CourtDataContext);
 
   const player1Name = teams[0].team1[0].userName;
   const player2Name = teams[0].team1[1].userName;
@@ -59,16 +63,33 @@ function GameScreen() {
     await navigateToCourtScreen(userName);
   }
 
-  return (
-    <View style={styles.container}>
-      <Text style={styles.matchingPlayersText}>
-        Please Head To {courtNumber}
-      </Text>
-      <Text style={styles.matchingPlayersText}>Good Luck!</Text>
+  const handleBackButtonPressAndroid = useCallback(() => {
+    return true; // This will prevent the default action (i.e., going back)
+  }, []);
 
-      <View style={styles.gameContainer}>
-        <View style={styles.teamContainer}>
-          <View style={styles.teamColumn}>
+  useEffect(() => {
+    BackHandler.addEventListener(
+      "hardwareBackPress",
+      handleBackButtonPressAndroid
+    );
+
+    return () => {
+      BackHandler.removeEventListener(
+        "hardwareBackPress",
+        handleBackButtonPressAndroid
+      );
+    };
+  }, [handleBackButtonPressAndroid]);
+
+  return (
+    <>
+      <StatusBar barStyle="dark-content" />
+      <View style={styles.container}>
+        <Text style={styles.heading}>Please Head To {courtNumber}</Text>
+        <Text style={styles.subHeading}>Good Luck!</Text>
+
+        <View style={styles.gameContainer}>
+          <View style={styles.teamCard}>
             <Text style={styles.teamHeading}>Team A</Text>
             <Text style={styles.playerText}>
               {player1Name} ({player1Elo})
@@ -77,12 +98,12 @@ function GameScreen() {
               {player2Name} ({player2Elo})
             </Text>
           </View>
-        </View>
-        <View style={styles.vsContainer}>
-          <Text style={styles.vsText}>Vs</Text>
-        </View>
-        <View style={styles.teamContainer}>
-          <View style={styles.teamColumn}>
+
+          <View style={styles.vsContainer}>
+            <Text style={styles.vsText}>VS</Text>
+          </View>
+
+          <View style={styles.teamCardB}>
             <Text style={styles.teamHeading}>Team B</Text>
             <Text style={styles.playerText}>
               {player3Name} ({player3Elo})
@@ -92,47 +113,56 @@ function GameScreen() {
             </Text>
           </View>
         </View>
-      </View>
-      <Text style={styles.matchingPlayersText}>Winner</Text>
-      <View style={styles.buttonContainer}>
-        <PrimaryButton onPress={teamAHandler}>
-          <Text style={styles.readyButtonText}>Team A</Text>
-        </PrimaryButton>
-        <PrimaryButton onPress={teamBHandler}>
-          <Text style={styles.readyButtonText}>Team B</Text>
-        </PrimaryButton>
-      </View>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            {Object.keys(updatedDetails)
-              .filter((key) => key === userName)
-              .map((key, index) => (
-                <View key={index}>
-                  <Text style={styles.modalHeading}>
-                    {updatedDetails[key].result === 1
-                      ? "Congratulations!"
-                      : "Better luck next time!"}
-                  </Text>
-                  <Text style={styles.modalText}>
-                    {"New Rating"}: {updatedDetails[key].eloRating} (
-                    {updatedDetails[key].ratingDiff > 0 ? "+" : ""}
-                    {updatedDetails[key].ratingDiff})
-                  </Text>
-                </View>
-              ))}
-            <PrimaryButton onPress={proceedHandler}>
-              <Text style={styles.readyButtonText}>Proceed</Text>
-            </PrimaryButton>
-          </View>
+        <View style={styles.winnerContainer}>
+          <MaterialCommunityIcons
+            name="trophy"
+            size={24}
+            color={GlobalStyles.colors.gray800}
+            style={styles.trophyIcon} // Apply the style here
+          />
         </View>
-      </Modal>
-    </View>
+        <View style={styles.buttonContainer}>
+          <PrimaryButton onPress={teamAHandler}>
+            <Text style={styles.readyButtonText}>Team A</Text>
+          </PrimaryButton>
+          <PrimaryButton onPress={teamBHandler}>
+            <Text style={styles.readyButtonText}>Team B</Text>
+          </PrimaryButton>
+        </View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <BlurView intensity={200} style={StyleSheet.absoluteFill}>
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                {Object.keys(updatedDetails)
+                  .filter((key) => key === userName)
+                  .map((key, index) => (
+                    <View key={index}>
+                      <Text style={styles.modalHeading}>
+                        {updatedDetails[key].result === 1
+                          ? "Congratulations!"
+                          : "Better luck next time!"}
+                      </Text>
+                      <Text style={styles.modalText}>
+                        {"New Rating"}: {updatedDetails[key].eloRating} (
+                        {updatedDetails[key].ratingDiff > 0 ? "+" : ""}
+                        {updatedDetails[key].ratingDiff})
+                      </Text>
+                    </View>
+                  ))}
+                <PrimaryButton onPress={proceedHandler}>
+                  <Text style={styles.readyButtonText}>Proceed</Text>
+                </PrimaryButton>
+              </View>
+            </View>
+          </BlurView>
+        </Modal>
+      </View>
+    </>
   );
 }
 
@@ -141,81 +171,111 @@ export default GameScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    padding: 20,
     justifyContent: "center",
     alignItems: "center",
-    paddingHorizontal: 20,
+    backgroundColor: GlobalStyles.colors.primary50,
   },
-  matchingPlayersText: {
+  heading: {
     fontSize: 24,
     fontWeight: "bold",
-    marginBottom: 20,
-    color: GlobalStyles.colors.primary800,
+    marginBottom: 10,
+    textAlign: "center",
+    color: GlobalStyles.colors.primary500,
+  },
+  subHeading: {
+    fontSize: 20,
+    marginBottom: 30,
+    textAlign: "center",
+    color: GlobalStyles.colors.primary500,
   },
   buttonContainer: {
-    flexDirection: "row", // Arrange the buttons horizontally
-    justifyContent: "space-evenly", // Add space between the buttons
-    width: "90%", // Make the container take the full width
+    flexDirection: "row",
+    justifyContent: "space-evenly",
+    width: "90%",
+    marginBottom: 20,
   },
   gameContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: "50%",
+    flexDirection: "column", // We adjust this to column for vertical stacking
     width: "90%",
-    marginBottom: 40,
-    borderRadius: 20,
-    backgroundColor: GlobalStyles.colors.primary700,
+    height: "55%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 45,
+  },
+  teamCard: {
+    width: "100%",
+    padding: 20,
+    borderRadius: 15,
+    backgroundColor: "white",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 20, // This affects space between Team A and VS
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 3,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
-  teamContainer: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 20,
-    paddingVertical: 20,
-  },
-  teamColumn: {
-    flex: 1,
+  teamCardB: {
+    width: "100%",
+    padding: 20,
+    borderRadius: 15,
+    backgroundColor: "white",
+    justifyContent: "center",
     alignItems: "center",
+    marginTop: 20, // This specifically affects space between VS and Team B
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 3,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
   },
   vsContainer: {
-    alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 10,
+    alignItems: "center",
+    marginVertical: 10, // Consistent margin around VS
   },
   vsText: {
-    fontSize: 30,
+    fontSize: 32,
     fontWeight: "bold",
-    color: "white",
+    color: GlobalStyles.colors.primary500,
   },
   playerText: {
     fontSize: 20,
-    color: "white",
-    marginBottom: 10,
+    color: GlobalStyles.colors.gray800,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: GlobalStyles.colors.gray500,
+    padding: 5,
+    borderRadius: 8,
+    width: 250, // Fixed width
+    height: 40, // Fixed height
+    justifyContent: "center", // Center the text vertically
+    alignItems: "center", // Center the text horizontally
+    textAlign: "center", // Ensure the text is centered within the box
   },
   teamHeading: {
-    fontSize: 20,
-    color: "white",
-    marginBottom: 20,
+    fontSize: 22,
+    color: GlobalStyles.colors.gray800,
+    marginBottom: 10,
     fontWeight: "bold",
   },
   readyButtonText: {
     fontSize: 18,
     color: "white",
   },
-
   centeredView: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
   },
-
   modalView: {
     margin: 20,
     backgroundColor: "white",
@@ -242,5 +302,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     color: "#333",
     marginBottom: 10,
+  },
+  winnerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 20,
+    marginLeft: 10,
+    position: "relative", // This ensures that children elements with absolute positioning are positioned relative to this container
+  },
+  trophyIcon: {
+    position: "absolute",
+    top: -0.25, // Adjust this value to move the icon upwards
+    left: -20, // Adjust this value to move the icon leftwards
   },
 });
