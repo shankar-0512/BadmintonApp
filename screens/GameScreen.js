@@ -12,29 +12,16 @@ import { BlurView } from "expo-blur";
 
 function GameScreen() {
   const route = useRoute();
-  const teams = route.params?.teamDetails || [];
-  const courtNumber = route.params?.courtNumber || [];
+  const { teamDetails = [], courtNumber = [] } = route.params;
   const { userName } = useContext(UserContext);
   const { updatedDetails, modalVisible, setModalVisible } =
     useContext(CourtDataContext);
 
-  const player1Name = teams[0].team1[0].userName;
-  const player2Name = teams[0].team1[1].userName;
-  const player3Name = teams[0].team2[0].userName;
-  const player4Name = teams[0].team2[1].userName;
-
-  const player1Elo = teams[0].team1[0].elo;
-  const player2Elo = teams[0].team1[1].elo;
-  const player3Elo = teams[0].team2[0].elo;
-  const player4Elo = teams[0].team2[1].elo;
+  const team1 = teamDetails[0]?.team1 || [];
+  const team2 = teamDetails[0]?.team2 || [];
 
   async function teamHandler(winners, losers) {
-    const request = {
-      winner: winners,
-      loser: losers,
-      court: courtNumber,
-    };
-
+    const request = { winner: winners, loser: losers, court: courtNumber };
     try {
       await updateElo(request);
     } catch (error) {
@@ -42,33 +29,16 @@ function GameScreen() {
     }
   }
 
-  function teamAHandler() {
-    teamHandler(teams[0].team1, teams[0].team2);
-  }
-
-  function teamBHandler() {
-    teamHandler(teams[0].team2, teams[0].team1);
-  }
-
-  async function proceedHandler() {
-    setModalVisible(false);
-    await navigateToCourtScreen(userName);
-  }
-
-  const handleBackButtonPressAndroid = useCallback(() => {
-    if (modalVisible) {
-      return true;
-    }
-
-    return true;
-  }, [modalVisible]);
+  const handleBackButtonPressAndroid = useCallback(
+    () => modalVisible,
+    [modalVisible]
+  );
 
   useEffect(() => {
     BackHandler.addEventListener(
       "hardwareBackPress",
       handleBackButtonPressAndroid
     );
-
     return () => {
       BackHandler.removeEventListener(
         "hardwareBackPress",
@@ -76,6 +46,12 @@ function GameScreen() {
       );
     };
   }, [handleBackButtonPressAndroid]);
+
+  const renderPlayer = (player, index) => (
+    <Text key={player.userName || index} style={styles.playerText}>
+      {player.userName} ({player.elo})
+    </Text>
+  );
 
   return (
     <>
@@ -87,12 +63,7 @@ function GameScreen() {
         <View style={styles.gameContainer}>
           <View style={styles.teamCard}>
             <Text style={styles.teamHeading}>Team A</Text>
-            <Text style={styles.playerText}>
-              {player1Name} ({player1Elo})
-            </Text>
-            <Text style={styles.playerText}>
-              {player2Name} ({player2Elo})
-            </Text>
+            {team1.map(renderPlayer)}
           </View>
 
           <View style={styles.vsContainer}>
@@ -101,35 +72,33 @@ function GameScreen() {
 
           <View style={styles.teamCardB}>
             <Text style={styles.teamHeading}>Team B</Text>
-            <Text style={styles.playerText}>
-              {player3Name} ({player3Elo})
-            </Text>
-            <Text style={styles.playerText}>
-              {player4Name} ({player4Elo})
-            </Text>
+            {team2.map(renderPlayer)}
           </View>
         </View>
+
         <View style={styles.winnerContainer}>
           <MaterialCommunityIcons
             name="trophy"
             size={24}
             color={GlobalStyles.colors.gray800}
-            style={styles.trophyIcon} // Apply the style here
+            style={styles.trophyIcon}
           />
         </View>
+
         <View style={styles.buttonContainer}>
-          <PrimaryButton onPress={teamAHandler}>
+          <PrimaryButton onPress={() => teamHandler(team1, team2)}>
             <Text style={styles.readyButtonText}>Team A</Text>
           </PrimaryButton>
-          <PrimaryButton onPress={teamBHandler}>
+          <PrimaryButton onPress={() => teamHandler(team2, team1)}>
             <Text style={styles.readyButtonText}>Team B</Text>
           </PrimaryButton>
         </View>
+
         <Modal
           animationType="slide"
           transparent={true}
           visible={modalVisible}
-          onRequestClose={() => {}} // No-op function
+          onRequestClose={() => {}}
         >
           <BlurView intensity={200} style={StyleSheet.absoluteFill}>
             <View style={styles.centeredView}>
@@ -145,12 +114,17 @@ function GameScreen() {
                       </Text>
                       <Text style={styles.modalText}>
                         {"New Rating"}: {updatedDetails[key].eloRating} (
-                        {updatedDetails[key].ratingDiff > 0 ? "+" : ""}
+                        {updatedDetails[key].ratingDiff >= 0 ? "+" : ""}
                         {updatedDetails[key].ratingDiff})
                       </Text>
                     </View>
                   ))}
-                <PrimaryButton onPress={proceedHandler}>
+                <PrimaryButton
+                  onPress={async () => {
+                    await navigateToCourtScreen(userName);
+                    setModalVisible(false);
+                  }}
+                >
                   <Text style={styles.readyButtonText}>Proceed</Text>
                 </PrimaryButton>
               </View>
@@ -223,7 +197,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20, 
+    marginTop: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,

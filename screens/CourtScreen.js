@@ -1,24 +1,22 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useEffect, useContext } from "react";
 import { View, StyleSheet, Text } from "react-native";
-import { GlobalStyles } from "../constants/styles";
-import PrimaryButton from "../components/UI/PrimaryButton";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import { CourtDataContext } from "../store/CourtDataContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
+import { GlobalStyles } from "../constants/styles";
+import PrimaryButton from "../components/UI/PrimaryButton";
 import {
   addToPool,
   removeFromPool,
   fetchActivePlayers,
   getCourtStatus,
 } from "../store/https";
+import { CourtDataContext } from "../store/CourtDataContext";
 
 function CourtScreen() {
-  const route = useRoute();
+  const { params } = useRoute();
   const navigation = useNavigation();
-
-  const userName = route.params?.userName || "";
-
+  const userName = params?.userName || "";
   const {
     activePlayers,
     courtStatus,
@@ -30,8 +28,7 @@ function CourtScreen() {
 
   async function fetchActivePlayersCount() {
     try {
-      response = await fetchActivePlayers(userName);
-
+      const response = await fetchActivePlayers(userName);
       if (response.responseCode === 0) {
         setActivePlayers(response.activePlayersCount);
       }
@@ -42,8 +39,7 @@ function CourtScreen() {
 
   async function onPressReady() {
     try {
-      response = await addToPool(userName);
-
+      const response = await addToPool(userName);
       if (response.responseCode === 0) {
         setReadyStatus(true);
       }
@@ -54,8 +50,7 @@ function CourtScreen() {
 
   async function onPressCancel() {
     try {
-      response = await removeFromPool(userName);
-
+      const response = await removeFromPool(userName);
       if (response.responseCode === 0) {
         setReadyStatus(false);
       }
@@ -66,8 +61,7 @@ function CourtScreen() {
 
   async function fetchCourtStatus() {
     try {
-      response = await getCourtStatus();
-
+      const response = await getCourtStatus();
       if (response.responseCode === 0) {
         setCourtStatus(response.courtStatus);
       }
@@ -81,12 +75,9 @@ function CourtScreen() {
   }, [readyStatus]);
 
   useEffect(() => {
-    // Subscribe to the focus event on the navigation object
     const unsubscribe = navigation.addListener("focus", fetchCourtStatus);
-
-    // Return a cleanup function that will unsubscribe the listener when the component unmounts
     return unsubscribe;
-  }, [navigation, fetchCourtStatus]); // Include fetchCourtStatus if it's a dependency
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -96,17 +87,12 @@ function CourtScreen() {
           name="badminton"
           size={24}
           color={GlobalStyles.colors.gray800}
-          style={styles.badmintonIcon} // Apply the style here
+          style={styles.badmintonIcon}
         />
         <Text style={styles.activePlayersText}>{activePlayers}</Text>
       </View>
-
       {Object.values(courtStatus)
-        .sort((a, b) => {
-          if (a.name < b.name) return -1;
-          if (a.name > b.name) return 1;
-          return 0;
-        })
+        .sort((a, b) => a.name.localeCompare(b.name))
         .map((court, index) => (
           <View key={index} style={styles.court}>
             <Text style={styles.courtText}>{court.name}</Text>
@@ -120,28 +106,32 @@ function CourtScreen() {
             </Text>
           </View>
         ))}
-
       <View style={styles.buttonContainer}>
-        {!readyStatus && (
+        {!readyStatus ? (
           <PrimaryButton onPress={onPressReady}>
             <MaterialCommunityIcons name="badminton" size={24} color="white" />
           </PrimaryButton>
-        )}
-
-        {readyStatus && (
-          <Text style={styles.waitingText}>
-            This may take a few minutes. Please wait
-          </Text>
-        )}
-        {readyStatus && (
-          <PrimaryButton onPress={onPressCancel}>
-            <MaterialCommunityIcons name="cup-water" size={24} color="white" />
-          </PrimaryButton>
+        ) : (
+          <>
+            <Text style={styles.waitingText}>
+              This may take a few minutes. Please wait
+            </Text>
+            <PrimaryButton onPress={onPressCancel}>
+              <MaterialCommunityIcons name="cup-water" size={24} color="white" />
+            </PrimaryButton>
+          </>
         )}
       </View>
     </View>
   );
 }
+
+const { colors } = GlobalStyles;
+
+const commonTextStyles = {
+  fontWeight: "500",
+  color: colors.gray800,
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -149,19 +139,18 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    backgroundColor: GlobalStyles.colors.primary50,
+    backgroundColor: colors.primary50,
   },
   title: {
     fontSize: 22,
     fontWeight: "bold",
-    color: GlobalStyles.colors.primary500,
+    color: colors.primary500,
     marginBottom: 25,
   },
   activePlayersText: {
     fontSize: 18,
-    fontWeight: "500",
-    color: GlobalStyles.colors.gray800,
     marginBottom: 20,
+    ...commonTextStyles,
   },
   court: {
     flexDirection: "row",
@@ -179,8 +168,7 @@ const styles = StyleSheet.create({
   },
   courtText: {
     fontSize: 20,
-    fontWeight: "500",
-    color: GlobalStyles.colors.gray800,
+    ...commonTextStyles,
   },
   statusText: {
     fontSize: 14,
@@ -188,10 +176,10 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   activeStatus: {
-    color: GlobalStyles.colors.success500,
+    color: colors.success500,
   },
   inactiveStatus: {
-    color: GlobalStyles.colors.error500,
+    color: colors.error500,
   },
   buttonContainer: {
     width: "100%",
@@ -200,9 +188,9 @@ const styles = StyleSheet.create({
   },
   waitingText: {
     fontSize: 16,
-    fontWeight: "500",
-    color: GlobalStyles.colors.gray700,
+    color: colors.gray700,
     marginBottom: -21.5,
+    ...commonTextStyles,
   },
   activePlayersContainer: {
     flexDirection: "row",

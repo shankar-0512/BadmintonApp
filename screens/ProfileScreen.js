@@ -4,9 +4,17 @@ import { UserContext } from "../store/UserContext";
 import { fetchUserDetails } from "../store/https";
 import { GlobalStyles } from "../constants/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useIsFocused } from "@react-navigation/native";
+
+const { colors } = GlobalStyles;
+
+// Named constants
+const SUCCESS_RESPONSE = 0;
 
 function ProfileScreen() {
   const { userName } = useContext(UserContext);
+
+  const isFocused = useIsFocused();
 
   const [userData, setUserData] = useState({
     username: "",
@@ -15,19 +23,20 @@ function ProfileScreen() {
   });
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        const response = await fetchUserDetails(userName);
-        if (response.responseCode === 0) {
-          setUserData(response.userData);
+    if (isFocused) {
+      async function fetchData() {
+        try {
+          const response = await fetchUserDetails(userName);
+          if (response.responseCode === SUCCESS_RESPONSE) {
+            setUserData(response.userData);
+          }
+        } catch (error) {
+          console.error("Error fetching user details:", error);
         }
-      } catch (error) {
-        console.log(error);
       }
+      fetchData();
     }
-
-    fetchData();
-  }, []);
+  }, [isFocused, userName]);
 
   return (
     <View style={styles.container}>
@@ -36,8 +45,8 @@ function ProfileScreen() {
         <MaterialCommunityIcons
           name="trophy-award"
           size={24}
-          color={GlobalStyles.colors.gray800}
-          style={styles.trophyAwardIcon} // Apply the style here
+          color={colors.gray800}
+          style={styles.trophyAwardIcon}
         />
         <Text style={styles.rating}>{userData.currentRating}</Text>
       </View>
@@ -62,27 +71,27 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 20,
     justifyContent: "center",
-    backgroundColor: GlobalStyles.colors.primary50,
+    backgroundColor: colors.primary50,
   },
   username: {
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 10,
     textAlign: "center",
-    color: GlobalStyles.colors.primary500,
+    color: colors.primary500,
   },
   rating: {
     fontSize: 20,
     marginBottom: 20,
     textAlign: "center",
-    color: GlobalStyles.colors.primary500,
+    color: colors.primary500,
   },
   heading: {
     fontSize: 22,
     fontWeight: "bold",
     marginBottom: 15,
     textAlign: "center",
-    color: GlobalStyles.colors.gray800,
+    color: colors.gray800,
   },
   gameCard: {
     flexDirection: "row",
@@ -102,11 +111,11 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   win: {
-    color: GlobalStyles.colors.success500,
+    color: colors.success500,
     fontSize: 18,
   },
   loss: {
-    color: GlobalStyles.colors.error500,
+    color: colors.error500,
     fontSize: 18,
   },
   ratingContainer: {

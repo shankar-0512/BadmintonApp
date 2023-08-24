@@ -8,7 +8,12 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { GlobalStyles } from "../constants/styles";
-import { signup } from "../store/https"; // Assuming you have a signup function in your store
+import { signup } from "../store/https";
+
+const { colors } = GlobalStyles;
+
+const SUCCESS_RESPONSE = 0;
+const ERROR_RESPONSE = 1;
 
 function SignupScreen() {
   const navigation = useNavigation();
@@ -28,19 +33,15 @@ function SignupScreen() {
     }
 
     try {
-      response = await signup(username, password); // Make sure to implement the signup function in your store
+      const response = await signup(username, password);
 
-      console.log(response);
-
-      if (response.responseCode === 0) {
+      if (response.responseCode === SUCCESS_RESPONSE) {
         navigation.navigate("LoginScreen");
-      }
-
-      if (response.responseCode === 1) {
+      } else if (response.responseCode === ERROR_RESPONSE) {
         alert(response.responseMessage);
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error during signup:", error);
     }
   }
 
@@ -50,14 +51,14 @@ function SignupScreen() {
       <TextInput
         style={styles.input}
         placeholder="Nickname"
-        placeholderTextColor={GlobalStyles.colors.gray700}
+        placeholderTextColor={colors.gray700}
         onChangeText={setUsername}
         value={username}
       />
       <TextInput
         style={styles.input}
         placeholder="Password"
-        placeholderTextColor={GlobalStyles.colors.gray700}
+        placeholderTextColor={colors.gray700}
         secureTextEntry
         onChangeText={setPassword}
         value={password}
@@ -65,7 +66,7 @@ function SignupScreen() {
       <TextInput
         style={styles.input}
         placeholder="Confirm Password"
-        placeholderTextColor={GlobalStyles.colors.gray700}
+        placeholderTextColor={colors.gray700}
         secureTextEntry
         onChangeText={setConfirmPassword}
         value={confirmPassword}
@@ -83,33 +84,37 @@ function SignupScreen() {
   );
 }
 
+const commonInputStyle = {
+  width: "90%",
+  padding: 12,
+  marginBottom: 20,
+  borderRadius: 5,
+  fontSize: 16,
+};
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
     paddingHorizontal: 20,
-    backgroundColor: GlobalStyles.colors.primary50,
+    backgroundColor: colors.primary50,
   },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    color: GlobalStyles.colors.primary500,
+    color: colors.primary500,
     marginBottom: 30,
   },
   input: {
-    width: "90%",
-    padding: 12,
+    ...commonInputStyle,
     borderWidth: 1,
-    borderColor: GlobalStyles.colors.primary200,
+    borderColor: colors.primary200,
     backgroundColor: "#fff",
-    color: GlobalStyles.colors.gray800,
-    marginBottom: 20,
-    borderRadius: 5,
-    fontSize: 16,
+    color: colors.gray800,
   },
   signupButton: {
-    backgroundColor: GlobalStyles.colors.primary500,
+    backgroundColor: colors.primary500,
     padding: 10,
     width: "90%",
     alignItems: "center",
@@ -131,12 +136,12 @@ const styles = StyleSheet.create({
   },
   loginText: {
     fontSize: 16,
-    color: GlobalStyles.colors.gray700,
+    color: colors.gray700,
   },
   loginLink: {
     fontSize: 16,
     fontWeight: "bold",
-    color: GlobalStyles.colors.primary400,
+    color: colors.primary400,
     marginLeft: 5,
   },
 });
