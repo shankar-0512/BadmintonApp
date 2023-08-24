@@ -19,6 +19,9 @@ function ProfileScreen() {
   const [userData, setUserData] = useState({
     username: "",
     currentRating: 0,
+    played: 0,
+    won: 0,
+    lost: 0,
     lastFiveGames: [],
   });
 
@@ -49,6 +52,19 @@ function ProfileScreen() {
           style={styles.trophyAwardIcon}
         />
         <Text style={styles.rating}>{userData.currentRating}</Text>
+      </View>
+
+      <View style={styles.tableContainer}>
+        <View style={styles.tableRow}>
+          <Text style={styles.tableHeading}>Played</Text>
+          <Text style={styles.tableHeading}>Won</Text>
+          <Text style={styles.tableHeading}>Lost</Text>
+        </View>
+        <View style={styles.tableRow}>
+          <Text style={styles.tableValue}>{userData.played}</Text>
+          <Text style={styles.tableValue}>{userData.won}</Text>
+          <Text style={styles.tableValue}>{userData.lost}</Text>
+        </View>
       </View>
 
       <Text style={styles.heading}>Last-5 Form</Text>
@@ -131,6 +147,29 @@ const styles = StyleSheet.create({
     top: 1,
     left: 122,
   },
+  tableContainer: {
+    flexDirection: "column",
+    marginBottom: 15,
+  },
+  tableRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: 5,
+  },
+  tableHeading: {
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "bold",
+    textAlign: "center",
+    color: colors.gray800,
+  },
+  tableValue: {
+    flex: 1,
+    fontSize: 18,
+    textAlign: "center",
+    color: colors.primary500,
+  }  
 });
 
 export default ProfileScreen;
