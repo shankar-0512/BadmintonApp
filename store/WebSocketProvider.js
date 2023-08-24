@@ -13,6 +13,7 @@ export function WebSocketProvider({ children }) {
     setCourtStatus,
     setModalVisible,
     setUpdatedDetails,
+    setReadyStatus,
   } = useContext(CourtDataContext);
   const navigation = useNavigation();
   const { userName } = useContext(UserContext);
@@ -43,9 +44,7 @@ export function WebSocketProvider({ children }) {
 
           for (const team of teams) {
             for (const player of [...team.team1, ...team.team2]) {
-              console.log(player, userNameRef.current);
               if (player.userName === userNameRef.current) {
-                console.log("NAVIGATE");
                 navigation.navigate("GameScreen", {
                   teamDetails: teams,
                   courtNumber: courtStatus[firstAvailableCourt].name,
@@ -59,6 +58,7 @@ export function WebSocketProvider({ children }) {
           break;
         case "navigateBack": // Handle the teams update
           if (userNameRef.current === receivedData.message.data) {
+            setReadyStatus(false);
             navigation.navigate("CourtScreen");
           }
           break;

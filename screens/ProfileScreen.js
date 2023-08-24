@@ -115,12 +115,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     marginBottom: 20,
     marginLeft: 10,
-    position: "relative", // This ensures that children elements with absolute positioning are positioned relative to this container
+    position: "relative",
   },
   trophyAwardIcon: {
     position: "absolute",
-    top: 1, // Adjust this value to move the icon upwards
-    left: 122, // Adjust this value to move the icon leftwards
+    top: 1,
+    left: 122,
   },
 });
 

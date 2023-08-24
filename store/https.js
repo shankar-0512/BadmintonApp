@@ -19,7 +19,6 @@ export async function signup(userName, password) {
 
 export async function fetchActivePlayers(userName) {
   const response = await axios.get(url + "fetchActivePlayers/");
-  console.log(response.data, userName);
   return response.data;
 }
 

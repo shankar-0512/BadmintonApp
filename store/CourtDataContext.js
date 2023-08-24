@@ -13,6 +13,7 @@ export function CourtDataContextProvider({ children }) {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [updatedDetails, setUpdatedDetails] = useState({});
+  const [readyStatus, setReadyStatus] = useState(false);
 
   const value = {
     activePlayers,
@@ -23,6 +24,8 @@ export function CourtDataContextProvider({ children }) {
     setModalVisible,
     updatedDetails,
     setUpdatedDetails,
+    readyStatus,
+    setReadyStatus,
   };
 
   return (

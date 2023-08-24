@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from "react";
-import { View, StyleSheet, Text, TouchableOpacity } from "react-native";
+import { View, StyleSheet, Text } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
 import { useNavigation, useRoute } from "@react-navigation/native";
@@ -19,10 +19,14 @@ function CourtScreen() {
 
   const userName = route.params?.userName || "";
 
-  const { activePlayers, courtStatus, setActivePlayers, setCourtStatus } =
-    useContext(CourtDataContext);
-
-  const [readyStatus, setReadyStatus] = useState(false);
+  const {
+    activePlayers,
+    courtStatus,
+    readyStatus,
+    setActivePlayers,
+    setCourtStatus,
+    setReadyStatus,
+  } = useContext(CourtDataContext);
 
   async function fetchActivePlayersCount() {
     try {
@@ -74,7 +78,7 @@ function CourtScreen() {
 
   useEffect(() => {
     fetchActivePlayersCount();
-  }, [readyStatus, courtStatus]);
+  }, [readyStatus]);
 
   useEffect(() => {
     // Subscribe to the focus event on the navigation object
@@ -84,21 +88,9 @@ function CourtScreen() {
     return unsubscribe;
   }, [navigation, fetchCourtStatus]); // Include fetchCourtStatus if it's a dependency
 
-  useEffect(() => {
-    // Listen for when CourtScreen receives focus
-    const unsubscribe = navigation.addListener("focus", () => {
-      setReadyStatus(false);
-    });
-
-    // Cleanup: remove the listener when CourtScreen unmounts or loses focus
-    return unsubscribe;
-  }, [navigation]);
-
-  ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Court Status</Text>
+      <Text style={styles.title}>COURT STATUS</Text>
       <View style={styles.activePlayersContainer}>
         <MaterialCommunityIcons
           name="badminton"
@@ -160,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: GlobalStyles.colors.primary50,
   },
   title: {
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "bold",
     color: GlobalStyles.colors.primary500,
     marginBottom: 25,
@@ -180,9 +172,9 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 20,
     backgroundColor: "#fff",
-    elevation: 3, // for android
-    shadowOffset: { width: 0, height: 2 }, // for ios
-    shadowOpacity: 0.25, // for ios
+    elevation: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
     borderRadius: 8,
   },
   courtText: {
@@ -217,12 +209,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
     marginLeft: 10,
-    position: "relative", // This ensures that children elements with absolute positioning are positioned relative to this container
+    position: "relative",
   },
   badmintonIcon: {
     position: "absolute",
-    top: -0.25, // Adjust this value to move the icon upwards
-    left: -30, // Adjust this value to move the icon leftwards
+    top: -0.25,
+    left: -30,
   },
 });
 

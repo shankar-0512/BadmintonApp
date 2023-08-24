@@ -1,29 +1,20 @@
 import React, { useContext, useEffect, useCallback } from "react";
-import { View, StyleSheet, Text, Modal } from "react-native";
+import { View, StyleSheet, Text, Modal, BackHandler } from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useRoute } from "@react-navigation/native";
 import { updateElo, navigateToCourtScreen } from "../store/https";
 import { UserContext } from "../store/UserContext";
 import { CourtDataContext } from "../store/CourtDataContext";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { StatusBar } from "expo-status-bar";
 import { BlurView } from "expo-blur";
-import { BackHandler } from "react-native";
 
 function GameScreen() {
-  const navigation = useNavigation();
   const route = useRoute();
   const teams = route.params?.teamDetails || [];
   const courtNumber = route.params?.courtNumber || [];
-  const courtKey = route.params?.courtKey;
-
   const { userName } = useContext(UserContext);
-
-  // State for handling the modal
-  //const [modalVisible, setModalVisible] = useState(false);
-  //const [updatedDetails, setUpdatedDetails] = useState({});
-
   const { updatedDetails, modalVisible, setModalVisible } =
     useContext(CourtDataContext);
 
@@ -60,12 +51,17 @@ function GameScreen() {
   }
 
   async function proceedHandler() {
+    setModalVisible(false);
     await navigateToCourtScreen(userName);
   }
 
   const handleBackButtonPressAndroid = useCallback(() => {
-    return true; // This will prevent the default action (i.e., going back)
-  }, []);
+    if (modalVisible) {
+      return true;
+    }
+
+    return true;
+  }, [modalVisible]);
 
   useEffect(() => {
     BackHandler.addEventListener(
@@ -133,7 +129,7 @@ function GameScreen() {
           animationType="slide"
           transparent={true}
           visible={modalVisible}
-          onRequestClose={() => setModalVisible(false)}
+          onRequestClose={() => {}} // No-op function
         >
           <BlurView intensity={200} style={StyleSheet.absoluteFill}>
             <View style={styles.centeredView}>
@@ -196,7 +192,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   gameContainer: {
-    flexDirection: "column", // We adjust this to column for vertical stacking
+    flexDirection: "column",
     width: "90%",
     height: "55%",
     justifyContent: "center",
@@ -210,7 +206,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 20, // This affects space between Team A and VS
+    marginBottom: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -227,7 +223,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 20, // This specifically affects space between VS and Team B
+    marginTop: 20, 
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
@@ -240,7 +236,7 @@ const styles = StyleSheet.create({
   vsContainer: {
     justifyContent: "center",
     alignItems: "center",
-    marginVertical: 10, // Consistent margin around VS
+    marginVertical: 10,
   },
   vsText: {
     fontSize: 32,
@@ -255,11 +251,11 @@ const styles = StyleSheet.create({
     borderColor: GlobalStyles.colors.gray500,
     padding: 5,
     borderRadius: 8,
-    width: 250, // Fixed width
-    height: 40, // Fixed height
-    justifyContent: "center", // Center the text vertically
-    alignItems: "center", // Center the text horizontally
-    textAlign: "center", // Ensure the text is centered within the box
+    width: 250,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+    textAlign: "center",
   },
   teamHeading: {
     fontSize: 22,
@@ -308,11 +304,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginBottom: 20,
     marginLeft: 10,
-    position: "relative", // This ensures that children elements with absolute positioning are positioned relative to this container
+    position: "relative",
   },
   trophyIcon: {
     position: "absolute",
-    top: -0.25, // Adjust this value to move the icon upwards
-    left: -20, // Adjust this value to move the icon leftwards
+    top: -0.25,
+    left: -20,
   },
 });
