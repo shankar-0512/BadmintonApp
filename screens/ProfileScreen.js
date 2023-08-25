@@ -22,6 +22,7 @@ function ProfileScreen() {
     played: 0,
     won: 0,
     lost: 0,
+    winPercentage: 0,
     lastFiveGames: [],
   });
 
@@ -59,11 +60,13 @@ function ProfileScreen() {
           <Text style={styles.tableHeading}>Played</Text>
           <Text style={styles.tableHeading}>Won</Text>
           <Text style={styles.tableHeading}>Lost</Text>
+          <Text style={styles.tableHeading}>Win %</Text>
         </View>
         <View style={styles.tableRow}>
           <Text style={styles.tableValue}>{userData.played}</Text>
           <Text style={styles.tableValue}>{userData.won}</Text>
           <Text style={styles.tableValue}>{userData.lost}</Text>
+          <Text style={styles.tableValue}>{userData.winPercentage}</Text>
         </View>
       </View>
 
