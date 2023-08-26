@@ -1,4 +1,4 @@
-import React, { useEffect, useContext } from "react";
+import React, { useEffect, useContext, useState } from "react";
 import { View, StyleSheet, Text } from "react-native";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -12,6 +12,20 @@ import {
   getCourtStatus,
 } from "../store/https";
 import { CourtDataContext } from "../store/CourtDataContext";
+import LottieView from "lottie-react-native";
+import {
+  ActivityIndicator,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+} from "react-native";
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 function CourtScreen() {
   const { params } = useRoute();
@@ -26,6 +40,9 @@ function CourtScreen() {
     setReadyStatus,
   } = useContext(CourtDataContext);
 
+  const [isLoadingReady, setIsLoadingReady] = useState(false);
+  const [isLoadingStatus, setIsLoadingStatus] = useState(false);
+
   async function fetchActivePlayersCount() {
     try {
       const response = await fetchActivePlayers(userName);
@@ -38,28 +55,37 @@ function CourtScreen() {
   }
 
   async function onPressReady() {
+    setIsLoadingReady(true);
     try {
       const response = await addToPool(userName);
       if (response.responseCode === 0) {
         setReadyStatus(true);
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoadingReady(false);
     }
   }
 
   async function onPressCancel() {
+    setIsLoadingReady(true);
     try {
       const response = await removeFromPool(userName);
       if (response.responseCode === 0) {
         setReadyStatus(false);
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoadingReady(false);
     }
   }
 
   async function fetchCourtStatus() {
+    setIsLoadingStatus(true);
     try {
       const response = await getCourtStatus();
       if (response.responseCode === 0) {
@@ -67,6 +93,8 @@ function CourtScreen() {
       }
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoadingStatus(false);
     }
   }
 
@@ -96,32 +124,52 @@ function CourtScreen() {
         .map((court, index) => (
           <View key={index} style={styles.court}>
             <Text style={styles.courtText}>{court.name}</Text>
-            <Text
-              style={[
-                styles.statusText,
-                court.status ? styles.activeStatus : styles.inactiveStatus,
-              ]}
-            >
-              {court.status ? "Available" : "Unavailable"}
-            </Text>
+            {isLoadingStatus ? (
+              <ActivityIndicator size="small" color="#00897B" />
+            ) : (
+              <Text
+                style={[
+                  styles.statusText,
+                  court.status ? styles.activeStatus : styles.inactiveStatus,
+                ]}
+              >
+                {court.status ? "Available" : "Unavailable"}
+              </Text>
+            )}
           </View>
         ))}
-      <View style={styles.buttonContainer}>
-        {!readyStatus ? (
-          <PrimaryButton onPress={onPressReady}>
+      {!readyStatus ? (
+        <PrimaryButton onPress={onPressReady}>
+          {isLoadingReady ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
             <MaterialCommunityIcons name="badminton" size={24} color="white" />
+          )}
+        </PrimaryButton>
+      ) : (
+        <>
+          <LottieView
+            source={require("../assets/infinity-loop.json")}
+            autoPlay
+            loop
+            style={{ width: 100, height: 100 }}
+          />
+          <Text style={styles.waitingText}>
+            Hang tight, game's about to begin! 🏸
+          </Text>
+          <PrimaryButton onPress={onPressCancel}>
+            {isLoadingReady ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <MaterialCommunityIcons
+                name="cup-water"
+                size={24}
+                color="white"
+              />
+            )}
           </PrimaryButton>
-        ) : (
-          <>
-            <Text style={styles.waitingText}>
-              This may take a few minutes. Please wait
-            </Text>
-            <PrimaryButton onPress={onPressCancel}>
-              <MaterialCommunityIcons name="cup-water" size={24} color="white" />
-            </PrimaryButton>
-          </>
-        )}
-      </View>
+        </>
+      )}
     </View>
   );
 }
@@ -159,7 +207,7 @@ const styles = StyleSheet.create({
     height: 70,
     width: "90%",
     padding: 12,
-    marginBottom: 20,
+    marginBottom: 12,
     backgroundColor: "#fff",
     elevation: 3,
     shadowOffset: { width: 0, height: 2 },
@@ -189,7 +237,9 @@ const styles = StyleSheet.create({
   waitingText: {
     fontSize: 16,
     color: colors.gray700,
-    marginBottom: -21.5,
+    marginBottom: -20,
+    marginTop: -20,
+    textAlign: "center", // This centers the text horizontally
     ...commonTextStyles,
   },
   activePlayersContainer: {

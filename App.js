@@ -16,7 +16,9 @@ import { View, Text } from "react-native";
 import { CourtDataContextProvider } from "./store/CourtDataContext";
 import { WebSocketProvider } from "./store/WebSocketProvider";
 import { UserProvider } from "./store/UserContext";
-import { Entypo } from "@expo/vector-icons";
+import { Image } from "react-native";
+import logo from "./assets/logo.png"
+
 
 const Stack = createNativeStackNavigator();
 const BottomTabs = createBottomTabNavigator();
@@ -49,13 +51,18 @@ function LoadingScreen({ navigation }) {
 }
 
 function SportsClubIconCenter() {
-  return <Entypo name="sports-club" size={30} color="white" />;
+  return <Image source={logo} style={{ width: 40, height: 50 }} />;
 }
 
 async function handleLogout(navigation) {
   await AsyncStorage.removeItem("userName");
-  navigation.navigate("LoginScreen");
+
+  navigation.reset({
+    index: 0,
+    routes: [{ name: 'LoginScreen' }],
+  });
 }
+
 
 function CourtOverview({ route }) {
   return (

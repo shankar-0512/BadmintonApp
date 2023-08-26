@@ -1,5 +1,11 @@
 import React, { useContext, useEffect, useCallback } from "react";
-import { View, StyleSheet, Text, Modal, BackHandler } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Text,
+  Modal,
+  BackHandler,
+} from "react-native";
 import { GlobalStyles } from "../constants/styles";
 import PrimaryButton from "../components/UI/PrimaryButton";
 import { useRoute } from "@react-navigation/native";

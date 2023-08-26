@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "BadmintonApp",
+    "name": "Shuttle Shift",
     "slug": "BadmintonApp",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -18,13 +18,20 @@
       "supportsTablet": true
     },
     "android": {
+      "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.uol.badminton"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "07ebe963-0685-4ae4-b23c-c9bfb6daf973"
+      }
     }
   }
 }

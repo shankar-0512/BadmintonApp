@@ -11,6 +11,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { UserContext } from "../store/UserContext";
 import { login } from "../store/https";
 import { GlobalStyles } from "../constants/styles";
+import { ActivityIndicator } from "react-native";
 
 const { colors } = GlobalStyles;
 
@@ -20,35 +21,51 @@ function LoginScreen() {
   const [password, setPassword] = useState("");
   const { setUserName } = useContext(UserContext);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   const handleNavigation = (screen) => () => navigation.navigate(screen);
-  
+
   async function handleLogin() {
+    setIsLoading(true);
     try {
       const response = await login(username, password);
 
-      if (response.responseCode === 0) {
-        await AsyncStorage.setItem("userName", response.userName);
-        setUserName(response.userName);
-        navigation.navigate("CourtOverview", { userName: response.userName });
-      } else if (response.responseCode === 1) {
-        alert(response.responseMessage);
+      switch (response.responseCode) {
+        case 0:
+          await AsyncStorage.setItem("userName", response.userName);
+          setUserName(response.userName);
+          navigation.replace("CourtOverview", { userName: response.userName });
+          break;
+        case 1:
+        case 3:
+        case 4:
+        case 5:
+        case 2: // Considering that other codes from 1-5 are all error states, we can group them
+          alert(response.responseMessage);
+          break;
+        default:
+          alert("Unknown error occurred.");
+          break;
       }
     } catch (error) {
       console.log(error);
+      alert("Error while logging in. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <TextInput 
-        style={styles.input} 
+      <TextInput
+        style={styles.input}
         placeholder="Nickname"
         placeholderTextColor={colors.gray700}
-        onChangeText={setUsername} 
-        value={username} 
+        onChangeText={setUsername}
+        value={username}
       />
-      <TextInput 
+      <TextInput
         style={styles.input}
         placeholder="Password"
         placeholderTextColor={colors.gray700}
@@ -57,7 +74,11 @@ function LoginScreen() {
         value={password}
       />
       <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-        <Text style={styles.loginButtonText}>Login</Text>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="white" />
+        ) : (
+          <Text style={styles.loginButtonText}>Login</Text>
+        )}
       </TouchableOpacity>
       <View style={styles.signupContainer}>
         <Text style={styles.signupText}>Don't have an account?</Text>
@@ -126,6 +147,5 @@ const styles = StyleSheet.create({
     marginLeft: 5,
   },
 });
-
 
 export default LoginScreen;

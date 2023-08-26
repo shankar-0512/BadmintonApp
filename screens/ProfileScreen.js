@@ -5,14 +5,29 @@ import { fetchUserDetails } from "../store/https";
 import { GlobalStyles } from "../constants/styles";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useIsFocused } from "@react-navigation/native";
+import {
+  ActivityIndicator,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+} from "react-native";
 
 const { colors } = GlobalStyles;
+
+if (
+  Platform.OS === "android" &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 
 // Named constants
 const SUCCESS_RESPONSE = 0;
 
 function ProfileScreen() {
   const { userName } = useContext(UserContext);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const isFocused = useIsFocused();
 
@@ -28,6 +43,7 @@ function ProfileScreen() {
 
   useEffect(() => {
     if (isFocused) {
+      setIsLoading(true);
       async function fetchData() {
         try {
           const response = await fetchUserDetails(userName);
@@ -36,6 +52,8 @@ function ProfileScreen() {
           }
         } catch (error) {
           console.error("Error fetching user details:", error);
+        } finally {
+          setIsLoading(false);
         }
       }
       fetchData();
@@ -44,43 +62,49 @@ function ProfileScreen() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.username}>Nickname: {userData.username}</Text>
-      <View style={styles.ratingContainer}>
-        <MaterialCommunityIcons
-          name="trophy-award"
-          size={24}
-          color={colors.gray800}
-          style={styles.trophyAwardIcon}
-        />
-        <Text style={styles.rating}>{userData.currentRating}</Text>
-      </View>
-
-      <View style={styles.tableContainer}>
-        <View style={styles.tableRow}>
-          <Text style={styles.tableHeading}>Played</Text>
-          <Text style={styles.tableHeading}>Won</Text>
-          <Text style={styles.tableHeading}>Lost</Text>
-          <Text style={styles.tableHeading}>Win %</Text>
-        </View>
-        <View style={styles.tableRow}>
-          <Text style={styles.tableValue}>{userData.played}</Text>
-          <Text style={styles.tableValue}>{userData.won}</Text>
-          <Text style={styles.tableValue}>{userData.lost}</Text>
-          <Text style={styles.tableValue}>{userData.winPercentage}</Text>
-        </View>
-      </View>
-
-      <Text style={styles.heading}>Last-5 Form</Text>
-      {userData.lastFiveGames
-        .slice()
-        .reverse()
-        .map((change, index) => (
-          <View key={index} style={styles.gameCard}>
-            <Text style={change > 0 ? styles.win : styles.loss}>
-              {change > 0 ? `W +${change}` : `L ${change}`}
-            </Text>
+      {isLoading ? (
+        <ActivityIndicator size="large" color="#00897B" />
+      ) : (
+        <>
+          <Text style={styles.username}>Nickname: {userData.username}</Text>
+          <View style={styles.ratingContainer}>
+            <MaterialCommunityIcons
+              name="trophy-award"
+              size={24}
+              color={colors.gray800}
+              style={styles.trophyAwardIcon}
+            />
+            <Text style={styles.rating}>{userData.currentRating}</Text>
           </View>
-        ))}
+
+          <View style={styles.tableContainer}>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableHeading}>Played</Text>
+              <Text style={styles.tableHeading}>Won</Text>
+              <Text style={styles.tableHeading}>Lost</Text>
+              <Text style={styles.tableHeading}>Win %</Text>
+            </View>
+            <View style={styles.tableRow}>
+              <Text style={styles.tableValue}>{userData.played}</Text>
+              <Text style={styles.tableValue}>{userData.won}</Text>
+              <Text style={styles.tableValue}>{userData.lost}</Text>
+              <Text style={styles.tableValue}>{userData.winPercentage}</Text>
+            </View>
+          </View>
+
+          <Text style={styles.heading}>Last-5 Form</Text>
+          {userData.lastFiveGames
+            .slice()
+            .reverse()
+            .map((change, index) => (
+              <View key={index} style={styles.gameCard}>
+                <Text style={change > 0 ? styles.win : styles.loss}>
+                  {change > 0 ? `W +${change}` : `L ${change}`}
+                </Text>
+              </View>
+            ))}
+        </>
+      )}
     </View>
   );
 }
@@ -172,7 +196,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: "center",
     color: colors.primary500,
-  }  
+  },
 });
 
 export default ProfileScreen;

@@ -9,11 +9,9 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { GlobalStyles } from "../constants/styles";
 import { signup } from "../store/https";
+import { ActivityIndicator } from "react-native";
 
 const { colors } = GlobalStyles;
-
-const SUCCESS_RESPONSE = 0;
-const ERROR_RESPONSE = 1;
 
 function SignupScreen() {
   const navigation = useNavigation();
@@ -21,27 +19,36 @@ function SignupScreen() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  const [isLoading, setIsLoading] = useState(false);
+
   async function handleSignup() {
-    if (password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
-    }
-
-    if (password.length < 5) {
-      alert("Password should be at least 5 characters long!");
-      return;
-    }
-
+    setIsLoading(true);
     try {
-      const response = await signup(username, password);
+      const response = await signup(username, password, confirmPassword);
 
-      if (response.responseCode === SUCCESS_RESPONSE) {
-        navigation.navigate("LoginScreen");
-      } else if (response.responseCode === ERROR_RESPONSE) {
-        alert(response.responseMessage);
+      switch (response.responseCode) {
+        case 0:
+          alert(response.responseMessage);
+          navigation.navigate("LoginScreen");
+          break;
+        case 1:
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+        case 6:
+        case 7:
+          alert(response.responseMessage);
+          break;
+        default:
+          alert("Unknown error occurred during signup.");
+          break;
       }
     } catch (error) {
       console.error("Error during signup:", error);
+      alert("Error while signing up. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -72,7 +79,11 @@ function SignupScreen() {
         value={confirmPassword}
       />
       <TouchableOpacity style={styles.signupButton} onPress={handleSignup}>
-        <Text style={styles.signupButtonText}>Signup</Text>
+        {isLoading ? (
+          <ActivityIndicator size="small" color="white" />
+        ) : (
+          <Text style={styles.signupButtonText}>Signup</Text>
+        )}
       </TouchableOpacity>
       <View style={styles.loginContainer}>
         <Text style={styles.loginText}>Already have an account?</Text>
