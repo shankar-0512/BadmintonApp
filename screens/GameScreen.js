@@ -61,7 +61,7 @@ function GameScreen() {
 
   return (
     <>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar style="dark" />
       <View style={styles.container}>
         <Text style={styles.heading}>Please Head To {courtNumber}</Text>
         <Text style={styles.subHeading}>Good Luck!</Text>
