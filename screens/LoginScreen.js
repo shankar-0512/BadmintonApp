@@ -41,7 +41,7 @@ function LoginScreen() {
         case 3:
         case 4:
         case 5:
-        case 2: // Considering that other codes from 1-5 are all error states, we can group them
+        case 2:
           alert(response.responseMessage);
           break;
         default:
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     borderRadius: 5,
     elevation: 5, // Android shadow
-    shadowColor: "#000", // iOS shadow
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,

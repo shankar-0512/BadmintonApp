@@ -21,7 +21,7 @@ export function WebSocketProvider({ children }) {
   const userNameRef = useRef(userName);
 
   useEffect(() => {
-    userNameRef.current = userName; // Always keep the ref updated with the latest value
+    userNameRef.current = userName; 
   }, [userName]);
 
   useEffect(() => {
@@ -56,14 +56,14 @@ export function WebSocketProvider({ children }) {
             }
           }
           break;
-        case "navigateBack": // Handle the teams update
+        case "navigateBack": 
           if (userNameRef.current === receivedData.message.data) {
             setReadyStatus(false);
             navigation.navigate("CourtScreen");
           }
           break;
 
-        case "updatedDetailsModal": // Handle the teams update
+        case "updatedDetailsModal": 
           setUpdatedDetails(receivedData.message.data);
           setModalVisible(true);
           break;

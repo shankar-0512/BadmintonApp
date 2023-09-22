@@ -43,7 +43,6 @@ function LoadingScreen({ navigation }) {
   }, [navigation]);
 
   return (
-    // You can replace this with a proper loading view
     <View>
       <Text>Loading...</Text>
     </View>
